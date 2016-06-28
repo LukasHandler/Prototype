@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.postsharp.org/1.0/configuration">
+
+  <Property Name="Input" Value="D:\Eigene Dateien\FH\6 Semester\Prototype2\Prototype\Models\bin\Debug\Models.dll" />
+  <Property Name="Output" Value="Models.dll" />
+  <Property Name="LoggingBackend" Value="Console"/>
+
+  <Multicast xmlns:fw="clr-namespace:Framework;assembly:Framework" xmlns:local="clr-namespace:Example;assembly:Example" xmlns:ps="clr-namespace:PostSharp.Patterns.Model;assembly:PostSharp.Patterns.Model">
+    <fw:UpdateBindingAspect AttributeTargetTypes="Models.*" AttributeTargetMemberAttributes="Public" />
+    
+    <local:AgeAspect AttributeTargetTypes="Models.Person" AttributeTargetMembers="BirthdayDate" />
+    <local:FullNameAspect AttributeTargetTypes="Models.Person" AttributeTargetMembers="regex:FirstName|LastName" />
+    <local:RefreshStudentsAspect AttributeTargetTypes="Models.School" AttributeTargetMembers="NewStudent"/>
+    <local:RefreshStudentsAndCoursesAspect AttributeTargetTypes="Models.School" AttributeTargetMembers="regex:DeleteStudent|AddStudentToCourse"/>
+    <local:RefreshCoursesAspect AttributeTargetTypes="Models.School" AttributeTargetMembers="regex:NewCourse" />
+  </Multicast>
+</Project>

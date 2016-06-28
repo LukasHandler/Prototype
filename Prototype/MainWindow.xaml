@@ -1,0 +1,28 @@
+﻿<Window x:Class="Example.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:fw="clr-namespace:Framework;assembly=Framework"
+        xmlns:local="clr-namespace:Example"
+        xmlns:models="clr-namespace:Models;assembly=Models"
+        mc:Ignorable="d"
+        SizeToContent="WidthAndHeight"
+        MinHeight="400"
+        Title="FH Wiener Neustadt" d:DesignWidth="1254.647" d:DesignHeight="802.941"
+        DataContext="{Binding RelativeSource={RelativeSource Self}}"
+        x:Name="mainWindow">
+
+    <Grid Background="LightBlue">
+        <ScrollViewer>
+            <StackPanel Orientation="Vertical">
+                <StackPanel Orientation="Horizontal">
+                    <Image Source="Resources/Images/logo.jpg" Margin="5"/>
+                    <TextBlock VerticalAlignment="Center" FontSize="25" Margin="5">Fachhochschule Wiener Neustadt</TextBlock>
+                </StackPanel>
+                <Rectangle Height="5" Margin="5"/>
+                <fw:GeneratedUserControl GenerationSource="{Binding Path=ExampleSchool, ElementName=mainWindow}"/>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Window>
