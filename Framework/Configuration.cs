@@ -26,6 +26,8 @@ namespace Framework
 
         private Dictionary<string, Type> uiElements;
 
+        private Dictionary<Type, Func<object, Type, object>> wrapperConverter;
+ 
         public Configuration()
         {
             this.dataTemplates = new Dictionary<Type, string[]>();
@@ -36,6 +38,22 @@ namespace Framework
             this.uiPropertyOverwriteValues = new Dictionary<string, List<Tuple<string, object>>>();
             this.memberConfigurators = new Dictionary<string, Configuration>();
             this.uiElements = new Dictionary<string, Type>();
+            this.wrapperConverter = new Dictionary<Type, Func<object, Type, object>>();
+
+            Func<object, Type, object> convertToWrapper = delegate (object source, Type resultWrapper)
+            {
+                var genericInstance = Activator.CreateInstance(resultWrapper);
+
+                foreach (var item in (IEnumerable)source)
+                {
+                    var wrapperItem = Generator.GetWrapper(item);
+                    genericInstance.GetType().GetMethod("Add").Invoke(genericInstance, new[] { wrapperItem });
+                }
+
+                return genericInstance;
+            };
+
+            this.AddConverter(typeof(IEnumerable), convertToWrapper);
         }
 
         public Dictionary<Type, string[]> DataTemplates
@@ -102,6 +120,14 @@ namespace Framework
             }
         }
 
+        public Dictionary<Type, Func<object, Type, object>> WrapperConverter
+        {
+            get
+            {
+                return this.wrapperConverter;
+            }
+        }
+
         public void AddTemplate(Type dataType, params string[] displayValues)
         {
             dataTemplates[dataType] = displayValues;
@@ -148,6 +174,11 @@ namespace Framework
         public void UseUIElement(string memberName, Type uiElement)
         {
             this.uiElements[memberName] = uiElement;
+        }
+
+        public void AddConverter(Type sourceType, Func<object, Type, object> convertToWrapper)
+        {
+            this.wrapperConverter[sourceType] = convertToWrapper;
         }
     }
 }

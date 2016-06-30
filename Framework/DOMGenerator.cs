@@ -19,22 +19,17 @@ namespace Framework
         public static Dictionary<Type, Type> WrapperTypes = new Dictionary<Type, Type>();
         public static Dictionary<Func<bool>, string> CanExecutedProperties = new Dictionary<Func<bool>, string>();
 
-        private CodeCompileUnit targetUnit = new CodeCompileUnit();
+        private CodeNamespace targetNamespace;
         private CodeTypeDeclaration targetClass;
-        private string outputFileName;
         private Type sourceType;
         private List<string> neededAssemblies;
+        private List<Type> processedTypes;
 
-        public static Type GetWrapperType(Type dataType)
+
+        public static Type GetWrapperType(Type dataType, CodeNamespace targetNamespace = null)
         {
-            if (!WrapperTypes.ContainsKey(dataType))
-            {
-                DOMGenerator generator = new DOMGenerator();
-                var wrapperType = generator.GenerateType(dataType);
-                WrapperTypes.Add(dataType, wrapperType);
-                Generator.CreateDataTemplateEntries(dataType, wrapperType);
-            }
-
+            DOMGenerator generator = new DOMGenerator();
+            generator.GeneratedTypeAndChildren(dataType);
             return WrapperTypes[dataType];
         }
 
@@ -66,15 +61,13 @@ namespace Framework
                 }
 
                 var newGenericType = genericBaseType.MakeGenericType(genericTypes);
-                var genericInstance = Activator.CreateInstance(newGenericType);
 
-                foreach (var item in (ICollection)source)
+                if (source is IEnumerable)
                 {
-                    var wrapperItem = Generator.GetWrapper(item);
-                    genericInstance.GetType().GetMethod("Add").Invoke(genericInstance, new[] { wrapperItem });
+                    sourceType = typeof(IEnumerable);
                 }
 
-                return genericInstance;
+                return Generator.GeneratorConfiguration.WrapperConverter[sourceType](source, newGenericType);
             }
             else
             {
@@ -141,16 +134,76 @@ namespace Framework
             }
         }
 
-        private Type GenerateType(Type source)
+        private void GeneratedTypeAndChildren(Type source)
         {
+            if (!WrapperTypes.ContainsKey(source))
+            {
+                processedTypes = new List<Type>();
+                string fileName = source.FullName + "Wrapper";
+                var targetUnit = new CodeCompileUnit();
+                targetNamespace = new CodeNamespace("GeneratedArtefacts");
+                targetUnit.Namespaces.Add(targetNamespace);
+
+                neededAssemblies = new List<string>();
+                neededAssemblies.Add("System.dll");
+                neededAssemblies.Add("System.ComponentModel.dll");
+                neededAssemblies.Add("Framework.dll");
+
+                targetNamespace.Imports.Add(new CodeNamespaceImport("System"));
+                targetNamespace.Imports.Add(new CodeNamespaceImport("System.ComponentModel"));
+
+                GenerateType(source);
+
+                DOMGenerator.GenerateCSharpCode(targetUnit, fileName);
+                DOMGenerator.CompileCSharpCode(fileName, neededAssemblies);
+
+                Assembly typeAssembly = Assembly.LoadFrom(fileName + ".dll");
+                var wrapperTypes = typeAssembly.GetTypes();
+
+                for (int i = 0; i < wrapperTypes.Count(); i++)
+                {
+                    WrapperTypes.Add(processedTypes[i], wrapperTypes[i]);
+                    Generator.CreateDataTemplateEntries(processedTypes[i], wrapperTypes[i]);
+                }
+            }
+        }
+
+        private CodeTypeReference GetCodeTypeReference(Type childrenType)
+        {
+            if (WrapperTypes.ContainsKey(childrenType))
+            {
+                var wrapperType = WrapperTypes[childrenType];
+                var assemblyName = wrapperType.Assembly.ManifestModule.Name;
+
+                if (!neededAssemblies.Contains(assemblyName))
+                {
+                    neededAssemblies.Add(assemblyName);
+                }
+
+                return new CodeTypeReference(WrapperTypes[childrenType]);
+            }
+            else
+            {
+                var safePreviousTargetClass = targetClass;
+                var safeSourceType = sourceType;
+                GenerateType(childrenType);
+                targetClass = safePreviousTargetClass;
+                sourceType = safeSourceType;
+                return new CodeTypeReference(childrenType.Name + "Wrapper");
+            }
+        }
+
+        private void GenerateType(Type source)
+        {
+            if (processedTypes.Contains(source))
+            {
+                return;
+            }
+
+            processedTypes.Add(source);
+
             sourceType = source;
             var typeName = sourceType.Name;
-
-            neededAssemblies = new List<string>();
-            neededAssemblies.Add("System.dll");
-            neededAssemblies.Add("System.ComponentModel.dll");
-            neededAssemblies.Add("Framework.dll");
-            outputFileName = typeName + "Wrapper";
 
             var assemblyName = sourceType.Assembly.ManifestModule.Name;
 
@@ -159,16 +212,11 @@ namespace Framework
                 neededAssemblies.Add(assemblyName);
             }
 
-            targetUnit = new CodeCompileUnit();
-            CodeNamespace samples = new CodeNamespace("GeneratedArtefacts");
-            samples.Imports.Add(new CodeNamespaceImport("System"));
-            samples.Imports.Add(new CodeNamespaceImport("System.ComponentModel"));
             targetClass = new CodeTypeDeclaration(typeName + "Wrapper");
             targetClass.IsClass = true;
             targetClass.TypeAttributes =
                 TypeAttributes.Public | TypeAttributes.Sealed;
-            samples.Types.Add(targetClass);
-            targetUnit.Namespaces.Add(samples);
+            targetNamespace.Types.Add(targetClass);
 
             var notifyInterface = new CodeTypeReference("INotifyPropertyChanged");
             targetClass.BaseTypes.Add(notifyInterface);
@@ -177,12 +225,6 @@ namespace Framework
             AddProperties();
             AddConstructors();
             AddMethods();
-
-            GenerateCSharpCode(targetUnit, this.outputFileName);
-            DOMGenerator.CompileCSharpCode(this.outputFileName, neededAssemblies);
-
-            Assembly typeAssembly = Assembly.LoadFrom(outputFileName + ".dll");
-            return typeAssembly.GetTypes()[0];
         }
 
         public void AddFields()
@@ -311,51 +353,55 @@ namespace Framework
             }
             else
             {
-                Type propertyWrapperType = null;
+                CodeTypeReference propertyWrapperType = null;
 
                 if (propertyType.IsGenericType)
                 {
                     var typeName = propertyType.FullName.Split('[')[0];
                     var fullTypeName = propertyType.FullName;
                     Type genericBaseType = Type.GetType(typeName);
-                    Type[] genericTypes = new Type[propertyType.GenericTypeArguments.Length];
+                    CodeTypeReference[] genericTypes = new CodeTypeReference[propertyType.GenericTypeArguments.Length];
 
                     int i = 0;
+                    var genericType = new CodeTypeReference(genericBaseType);
 
                     foreach (var item in propertyType.GenericTypeArguments)
                     {
                         if (Generator.IsSimple(item))
                         {
-                            genericTypes[i] = item;
+                            genericTypes[i] = new CodeTypeReference(item);
                         }
                         else
                         {
-                            var wrapperType = GetWrapperType(item);
+                            genericType.TypeArguments.Add(GetCodeTypeReference(item));
+
+                            var wrapperType = GetCodeTypeReference(item);
                             genericTypes[i] = wrapperType;
 
-                            if (!neededAssemblies.Contains(wrapperType.Name))
-                            {
-                                neededAssemblies.Add(wrapperType.Name + ".dll");
-                            }
+                            //if (!neededAssemblies.Contains(wrapperType.Name))
+                            //{
+                            //    neededAssemblies.Add(wrapperType.Name + ".dll");
+                            //}
                         }
 
                         i++;
                     }
 
-                    propertyWrapperType = genericBaseType.MakeGenericType(genericTypes);
+                    propertyWrapperType = genericType;
+                    
                 }
                 else
                 {
-                    propertyWrapperType = GetWrapperType(propertyType);
+                    propertyWrapperType = GetCodeTypeReference(propertyType);
 
-                    if (!neededAssemblies.Contains(propertyWrapperType.Name))
-                    {
-                        neededAssemblies.Add(propertyWrapperType.Name + ".dll");
-                    }
+                    //if (!neededAssemblies.Contains(propertyWrapperType.Name))
+                    //{
+                    //    neededAssemblies.Add(propertyWrapperType.Name + ".dll");
+                    //}
                 }
 
-                var declaration = new CodeTypeDeclaration(propertyWrapperType.ToString());
-                property.Type = new CodeTypeReference(declaration.Name);
+                //var declaration = new CodeTypeDeclaration(propertyWrapperType.ToString());
+                property.Type = propertyWrapperType;
 
                 if (canRead)
                 {
@@ -366,7 +412,7 @@ namespace Framework
                     "ConvertToWrapperType", new CodeFieldReferenceExpression(
                         new CodeThisReferenceExpression(), "objectInstance." + propertyName));
 
-                    var castedStatement = new CodeCastExpression(new CodeTypeReference(propertyWrapperType), invocation);
+                    var castedStatement = new CodeCastExpression(propertyWrapperType, invocation);
 
                     var returnStatement = new CodeMethodReturnStatement(castedStatement);
                     property.GetStatements.Add(returnStatement);

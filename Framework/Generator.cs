@@ -324,7 +324,7 @@ namespace Framework
             {
                 Window parameterWindow = new Window();
                 parameterWindow.Background = Preferences.DefaultWindowColor;
-                parameterWindow.Title = "Run Method";
+                parameterWindow.Title = method.Name;
                 parameterWindow.SizeToContent = SizeToContent.WidthAndHeight;
                 StackPanel content = new StackPanel();
                 content.Orientation = Orientation.Vertical;
@@ -374,7 +374,6 @@ namespace Framework
                         valueSelection.SetBinding(ComboBox.SelectedItemProperty, dataBinding);
 
                         content.Children.Add(selectionPanel);
-
                     }
                     else
                     {
