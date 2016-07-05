@@ -10,6 +10,6 @@ namespace Framework.Display
 {
     public interface IMethodDisplayable
     {
-        void DisplayMethod(object dataObject, MethodInfo method, Binding canExecuteBinding);
+        void DisplayMethod(object dataObject, MethodInfo method, Binding canExecuteBinding, string title);
     }
 }

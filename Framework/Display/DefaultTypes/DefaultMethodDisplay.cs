@@ -12,10 +12,9 @@ namespace Framework.Display.DefaultTypes
 {
     public class DefaultMethodDisplay : Button, IMethodDisplayable
     {
-        public void DisplayMethod(object dataObject, MethodInfo method, Binding canExecuteBinding)
+        public void DisplayMethod(object dataObject, MethodInfo method, Binding canExecuteBinding, string title)
         {
-            this.Content = Generator.GetTitle(dataObject, method.Name);
-            this.Content = method.Name;
+            this.Content = title;
             this.Width = Preferences.DefaultLabelWidth;
             this.Margin = Preferences.DefaultMargin;
 

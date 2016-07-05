@@ -48,7 +48,7 @@ namespace Example
 
         public void ConfigurateGenerator()
         {
-            //TypeDefinitions.RegisterElement(typeof(DateTime), typeof(DefaultTextDisplay));
+            Preferences.DefaultWindowColor = Brushes.LightBlue;
 
             Configuration config = new Configuration();
             config.AddTemplate(typeof(Student), "FirstName", "LastName");
@@ -65,20 +65,13 @@ namespace Example
                 return this.ExampleSchool.Students.Count != 0;
             };
 
-            config.AddCanExecuteCollection(canDeleteStudent, "Models.School.DeleteStudent", "Models.School.AddStudentToCourse");
-
-            config.AddTitle("Models.School.Students", "Studenten");
-            config.AddTitle("Models.School.Courses", "Kurse");
-            config.AddTitle("Models.School.Professors", "Professoren");
+            config.AddCanExecuteFunction(canDeleteStudent, "Models.School.DeleteStudent", "Models.School.AddStudentToCourse");
 
             config.UIPropertyOvewrite("Models.School.Name", "Background", Brushes.AliceBlue);
 
             Configuration directorConfigurator = new Configuration();
             directorConfigurator.HideMember("Models.Professor.AccountNumber");
-
             config.AddMemberConfiguration("Models.Course.CourseProfessor", directorConfigurator);
-
-            //config.UseUIElement("Models.Professor.BirthdayDate", typeof(DefaultTextDisplay));
 
             Generator.GeneratorConfiguration = config;
         }

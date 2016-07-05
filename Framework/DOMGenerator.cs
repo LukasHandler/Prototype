@@ -62,9 +62,9 @@ namespace Framework
 
                 var newGenericType = genericBaseType.MakeGenericType(genericTypes);
 
-                if (source is IEnumerable)
+                if (source is ICollection)
                 {
-                    sourceType = typeof(IEnumerable);
+                    sourceType = typeof(ICollection);
                 }
 
                 return Generator.GeneratorConfiguration.WrapperConverter[sourceType](source, newGenericType);
@@ -215,7 +215,7 @@ namespace Framework
             targetClass = new CodeTypeDeclaration(typeName + "Wrapper");
             targetClass.IsClass = true;
             targetClass.TypeAttributes =
-                TypeAttributes.Public | TypeAttributes.Sealed;
+                TypeAttributes.Public;
             targetNamespace.Types.Add(targetClass);
 
             var notifyInterface = new CodeTypeReference("INotifyPropertyChanged");
@@ -283,7 +283,17 @@ namespace Framework
                     }
 
                     CodeMethodInvokeExpression methodCall = new CodeMethodInvokeExpression(new CodeMethodReferenceExpression(new CodeFieldReferenceExpression(new CodeThisReferenceExpression(), "objectInstance"), method.Name), parameterReferences);
-                    generatedMethod.Statements.Add(methodCall);
+
+                    if (method.ReturnType.FullName != "System.Void")
+                    {
+                        CodeMethodReturnStatement returnStm = new CodeMethodReturnStatement(methodCall);
+                        generatedMethod.Statements.Add(returnStm);
+                    }
+                    else
+                    {
+                        generatedMethod.Statements.Add(methodCall);
+                    }
+
                     targetClass.Members.Add(generatedMethod);
 
                     var canExecuteKey = method.DeclaringType.FullName + "." + method.Name;

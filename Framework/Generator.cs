@@ -246,15 +246,15 @@ namespace Framework
 
                     var realMethod = realInstance.GetType().GetMethod(method.Name);
 
-                    string canExecuteKey = realMethod.DeclaringType.FullName + "." + realMethod.Name;
+                    string methodMemberName = realMethod.DeclaringType.FullName + "." + realMethod.Name;
                     PropertyInfo enableConditionProperty = null;
                     Binding canExecuteBinding = null;
 
-                    if (GeneratorConfiguration.CanExecuteCollection.ContainsKey(canExecuteKey))
+                    if (GeneratorConfiguration.CanExecuteCollection.ContainsKey(methodMemberName))
                     {
                         try
                         {
-                            var function = GeneratorConfiguration.CanExecuteCollection[canExecuteKey];
+                            var function = GeneratorConfiguration.CanExecuteCollection[methodMemberName];
                             enableConditionProperty = dataType.GetProperty(DOMGenerator.CanExecutedProperties[function]);
 
                             canExecuteBinding = new Binding(enableConditionProperty.Name);
@@ -271,7 +271,14 @@ namespace Framework
                     var uiType = TypeDefinitions.MethodDisplay;
                     var uiElement = (IMethodDisplayable)Activator.CreateInstance(uiType);
 
-                    uiElement.DisplayMethod(instance, method, canExecuteBinding);
+                    string title = method.Name;
+
+                    if (GeneratorConfiguration.Titles.ContainsKey(methodMemberName))
+                    {
+                        title = GeneratorConfiguration.Titles[methodMemberName];
+                    }
+
+                    uiElement.DisplayMethod(instance, method, canExecuteBinding, title);
                     parent.Children.Add((UIElement)uiElement);
                 }
             }

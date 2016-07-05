@@ -74,8 +74,8 @@
     <Compile Include="Exceptions\DoesnotImplementViewTypeException.cs" />
     <Compile Include="Exceptions\IDataDisplayAbleNotImplementedException.cs" />
     <Compile Include="Exceptions\NotAUIElementException.cs" />
-    <Compile Include="GeneratedUserControl.xaml.cs">
-      <DependentUpon>GeneratedUserControl.xaml</DependentUpon>
+    <Compile Include="GeneratedDisplay.xaml.cs">
+      <DependentUpon>GeneratedDisplay.xaml</DependentUpon>
     </Compile>
     <Compile Include="Generator.cs" />
     <Compile Include="Preferences.cs" />
@@ -90,7 +90,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="GeneratedUserControl.xaml">
+    <Page Include="GeneratedDisplay.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

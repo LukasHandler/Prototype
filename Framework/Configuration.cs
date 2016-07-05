@@ -44,7 +44,7 @@ namespace Framework
             {
                 var genericInstance = Activator.CreateInstance(resultWrapper);
 
-                foreach (var item in (IEnumerable)source)
+                foreach (var item in (ICollection)source)
                 {
                     var wrapperItem = Generator.GetWrapper(item);
                     genericInstance.GetType().GetMethod("Add").Invoke(genericInstance, new[] { wrapperItem });
@@ -53,7 +53,7 @@ namespace Framework
                 return genericInstance;
             };
 
-            this.AddConverter(typeof(IEnumerable), convertToWrapper);
+            this.AddConverter(typeof(ICollection), convertToWrapper);
         }
 
         public Dictionary<Type, string[]> DataTemplates
@@ -138,7 +138,7 @@ namespace Framework
             this.parameterCollections[new Tuple<string, string>(methodName, parameterName)] = collection;
         }
 
-        public void AddCanExecuteCollection(Func<bool> canExecuteFunction, params string[] methodNames)
+        public void AddCanExecuteFunction(Func<bool> canExecuteFunction, params string[] methodNames)
         {
             foreach (var methodName in methodNames)
             {

@@ -136,7 +136,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>C:\Users\Lukas\Downloads\PostSharp-4.3.10-preview\tools\postsharp-net40-x86-native.exe /X:AspectLoader.psproj /P:Language=C#C:\Users\Lukas\Downloads\PostSharp-4.3.10-preview\tools\postsharp-net40-x86-native.exe /X:AspectLoader.psproj /P:Language=C#</PostBuildEvent>
+    <PostBuildEvent>C:\Users\Lukas\Downloads\PostSharp-4.3.10-preview\tools\postsharp-net40-x86-native.exe /X:AspectLoader.psproj /P:Language=C#</PostBuildEvent>
   </PropertyGroup>
   <Import Project="..\packages\PostSharp.4.3.10-preview\tools\PostSharp.targets" Condition="Exists('..\packages\PostSharp.4.3.10-preview\tools\PostSharp.targets')" />
   <Target Name="EnsurePostSharpImported" BeforeTargets="BeforeBuild" Condition="'$(PostSharp30Imported)' == ''">
