@@ -6,13 +6,13 @@ namespace Models
 {
     public class School
     {
-        public string Name;
+        public string Name { get; set; }
 
-        public ICollection<Student> Students;
+        public ICollection<Student> Students { get; set; }
 
-        public ICollection<Professor> Professors;
+        public ICollection<Professor> Professors { get; set; }
 
-        public ICollection<Course> Courses;
+        public ICollection<Course> Courses { get; set; }
 
         public School()
         {

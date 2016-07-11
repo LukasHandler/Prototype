@@ -7,10 +7,10 @@
       <FileName>Course.cs</FileName>
     </TypeIdentifier>
     <ShowAsAssociation>
-      <Field Name="CourseProfessor" />
+      <Property Name="CourseProfessor" />
     </ShowAsAssociation>
     <ShowAsCollectionAssociation>
-      <Field Name="Students" />
+      <Property Name="Students" />
     </ShowAsCollectionAssociation>
   </Class>
   <Class Name="Models.Person">
@@ -39,9 +39,9 @@
       <FileName>School.cs</FileName>
     </TypeIdentifier>
     <ShowAsCollectionAssociation>
-      <Field Name="Professors" />
-      <Field Name="Students" />
-      <Field Name="Courses" />
+      <Property Name="Students" />
+      <Property Name="Professors" />
+      <Property Name="Courses" />
     </ShowAsCollectionAssociation>
   </Class>
   <Class Name="Models.Student">

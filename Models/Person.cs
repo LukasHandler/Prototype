@@ -4,11 +4,11 @@ namespace Models
 {
     public class Person
     {
-        public string FirstName;
+        public string FirstName { get; set; }
 
-        public string LastName;
+        public string LastName { get; set; }
 
-        public DateTime BirthdayDate;
+        public DateTime BirthdayDate { get; set; }
 
         public string FullName
         {

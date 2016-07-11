@@ -2,6 +2,6 @@
 {
     public class Professor : Person
     {
-        public int AccountNumber;
+        public int AccountNumber { get; set; }
     }
 }

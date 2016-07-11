@@ -4,11 +4,11 @@ namespace Models
 {
     public class Course
     {
-        public string CourseName;
+        public string CourseName { get; set; }
 
-        public ICollection<Student> Students;
+        public ICollection<Student> Students { get; set; }
 
-        public Professor CourseProfessor;
+        public Professor CourseProfessor { get; set; }
 
         public Course()
         {

@@ -2,6 +2,6 @@
 {
     public class Student : Person
     {
-        public int MatriculationNumber;
+        public int MatriculationNumber { get; set; }
     }
 }
