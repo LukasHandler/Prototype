@@ -22,12 +22,9 @@ namespace Models
         {
             get
             {
-                //http://stackoverflow.com/questions/9/how-do-i-calculate-someones-age-in-c
-                var now = DateTime.Now;
-                var birthDate = this.BirthdayDate;
-                int age = now.Year - birthDate.Year;
+                int age = DateTime.Now.Year - this.BirthdayDate.Year;
 
-                if (now.Month < birthDate.Month || (now.Month == birthDate.Month && now.Day < birthDate.Day))
+                if (DateTime.Now.Month < this.BirthdayDate.Month || (DateTime.Now.Month == this.BirthdayDate.Month && DateTime.Now.Day < this.BirthdayDate.Day))
                 {
                     age--;
                 }
